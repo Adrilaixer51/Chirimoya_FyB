@@ -5,6 +5,7 @@ import { ShoppingCart, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Inter } from "next/font/google";
 import { useEffect } from "react";
 import Papa from "papaparse";
+import Link from 'next/link';
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -65,8 +66,9 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-
+  const [cart, setCart] = useState([]);
+  const [message, setMessage] = useState("");
+  
 
   const handlePrev = () => {
     setStartIndex((prev) => (prev > 0 ? prev - 4 : prev));
@@ -80,6 +82,44 @@ export default function Home() {
     setSelectedCategory(categoryName);
   };  
 
+  const addToCart = (product) => {
+    setCart((prevCart) => {
+      const existingProduct = prevCart.find((item) => item.name === product.name);
+      if (existingProduct) {
+        return prevCart.map((item) =>
+          item.name === product.name ? { 
+            ...item, 
+            quantity: (item.quantity || 1) + 1, 
+            totalprice: (item.totalPrice || 0) + product.price
+          } 
+          : item
+        );
+      } else {
+        return [...prevCart, { ...product, quantity: 1, totalPrice: product.price }];
+      }
+    });
+  
+    // Mostrar mensaje de confirmación
+    setMessage("Producto añadido correctamente");
+    setTimeout(() => setMessage(""), 2000);
+  };
+
+  const updateQuantity = (productName, change) => {
+    setCart((prevCart) => {
+      return prevCart
+        .map((item) =>
+          item.name === productName
+            ? { 
+              ...item, 
+              quantity: item.quantity + change,
+              totalPrice: item.totalPrice + change * item.price,
+            }
+            : item
+        )
+        .filter((item) => item.quantity > 0); // Eliminar productos con cantidad 0
+    });
+  };
+  
   useEffect(() => {
     fetch("/MercadonaLimpiado3.csv")
       .then((response) => response.text())
@@ -89,10 +129,11 @@ export default function Home() {
           header: true,
           dynamicTyping: true,
           complete: (result) => {
+            setCsvData(result.data);
             console.log("Datos parseados con PapaParse:", result.data); // Ver qué estructura tiene cada fila
             const productsData = result.data
               .map((row) =>
-                row.photos?.startsWith("http")
+                row.photos?.startsWith("http") && row.fecha_actual === "2024-10-22"
                   ? {
                       photo: row.photos,
                       name: row.display_name,  // Asegurar que el nombre esté aquí
@@ -156,9 +197,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-cover bg-no-repeat bg-fixed" style={{ backgroundImage: "url('/FondoSupermercado.jpg')" }}>
+    <div className="min-h-screen flex flex-col bg-cover bg-no-repeat bg-fixed" style={{ backgroundImage: "url('/Fondos4.jpg')" }}>
       {/* CABECERA */}
-      <header className="w-full bg-[#00563B] shadow-lg p-4 flex justify-between items-center px-9">
+      <header className="w-full h-20 bg-[#00563B] shadow-lg p-4 flex justify-between items-center px-9">
         <div className="logo">
           <Image src="/Logo.png" 
           alt="Chirimoya Logo" 
@@ -178,33 +219,60 @@ export default function Home() {
           <X size={24} />
         </button>
         <h2 className="text-xl font-bold mb-4">Carrito</h2>
-        <p>Cesta</p>
+        <ul className="text-white">
+          {cart.map((item, index) => (
+            <li key={index} className="border-b py-2 flex items-center">
+              <Image src={item.photo} alt={item.name} width={40} height={40} className="rounded-md mr-2" />
+              <div className="flex-1">
+                <span>
+                  {item.name}-- 
+                  {item.price}€
+                </span>
+                <span className="block">(x{item.totalPrice})€ (x{item.quantity})</span>
+              </div>
+              <div className="flex items-center">
+                <button
+                  className="bg-red-500 text-white px-2 py-1 rounded"
+                  onClick={() => updateQuantity(item.name, -1)}
+                >
+                  -
+                </button>
+                <button
+                  className="bg-green-500 text-white px-2 py-1 rounded ml-2"
+                  onClick={() => updateQuantity(item.name, 1)}
+                >
+                  +
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* MENÚ DE NAVEGACIÓN - CARRUSEL */}
       <nav className="w-full p-4 flex justify-center items-center relative">
-        <button onClick={handlePrev} className="absolute left-0 p-2 bg-[#663399] rounded-full shadow-md">
+        <button onClick={handlePrev} className="absolute left-0 p-2 bg-[#A869EB] rounded-full shadow-md">
           <ChevronLeft className="w-8 h-8" />
         </button>
         <ul className="flex space-x-4 overflow-hidden">
           {categories.slice(startIndex, startIndex + itemsPerPage).map((category, index) => (
             <li key={index} className="text-center cursor-pointer" onClick={() => handleCategoryClick(category.name)}>
               <div className={`p-2 rounded-lg shadow-md border border-gray-300 transition-all duration-300
-                ${selectedCategory === category.name ? "bg-[#663399] text-white" : "bg-white text-black hover:bg-[#663399] hover:text-white"}`}>
+                ${selectedCategory === category.name ? "bg-[#663399] text-white" : "bg-white text-black hover:bg-[#A869EB] hover:text-white"}`}>
                 <Image src={category.image} alt={category.name} width={265} height={265} className="rounded-md" />
                 <p>{category.name}</p>
               </div>
             </li>
           ))}
         </ul>
-        <button onClick={handleNext} className="absolute right-0 p-2 bg-[#663399] rounded-full shadow-md">
+        <button onClick={handleNext} className="absolute right-0 p-2 bg-[#A869EB] rounded-full shadow-md">
           <ChevronRight className="w-8 h-8" />
         </button>
       </nav>
       {selectedCategory && (
         <div className="flex justify-center mt-4">
           <button 
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition" 
+            className="bg-[#663399] text-white px-4 py-2 rounded hover:bg-[#111111] transition" 
             onClick={() => setSelectedCategory(null)}
           >
             Mostrar todos los productos
@@ -215,7 +283,7 @@ export default function Home() {
 
       {/*CUERPO PRINCIPAL */}
       <main className="flex flex-col items-center justify-center flex-1 p-8 pl-50px">
-        <div className="shadow-lg justify-center rounded-2xl p-6 w-full max-w-lg bg-[#663399] border border-[2px] border-[#B284BE]">
+        <div className="shadow-lg justify-center rounded-2xl p-6 w-full max-w-lg bg-[#A869EB] border border-[2px] border-[#B284BE]">
           <div className="flex justify-center mb-4">
             
           </div>
@@ -269,11 +337,12 @@ export default function Home() {
             onClick={() => setIsMercadonaActive(!isMercadonaActive)}
           />
         </div>
+
         <div className="grid grid-cols-5 gap-4 p-4">
           {products.map((product, index) => (
             <div 
               key={index} 
-              className="border rounded-lg p-2 shadow-md bg-white text-black text-center hover:bg-[#663399] hover:text-white transition-all duration-300 cursor-pointer"
+              className="border rounded-lg p-2 shadow-md bg-white text-black text-center hover:bg-[#A869EB] hover:text-white transition-all duration-300 cursor-pointer"
               onClick={() => openModal(product)}
             >
               <Image
@@ -292,7 +361,7 @@ export default function Home() {
       {/* MODAL */}
       {isModalOpen && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full relative">
             <button className="absolute top-2 right-2 text-black" onClick={closeModal}>
               <X size={24} />
             </button>
@@ -304,10 +373,20 @@ export default function Home() {
                 <p className="text-lg font-semibold text-green-600">{selectedProduct.price} €</p>
                 <p className="text-gray-700">Supermercado: {selectedProduct.supermarket}</p>
                 <p className="text-gray-700">Fecha: {selectedProduct.time}</p>
-                <button className="mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                <Link href={`/productos/${encodeURIComponent(selectedProduct.name)}`} className="text-blue-500 underline">
+                  Más información
+                </Link>
+                <button className="mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                  onClick={() => addToCart(selectedProduct)}
+                >
                   Añadir al carrito
                 </button>
               </div>
+              {message && (
+                <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md">
+                  {message}
+                </div>
+              )}
             </div>
           </div>
         </div>
