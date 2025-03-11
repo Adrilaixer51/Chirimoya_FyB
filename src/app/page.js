@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import Papa from "papaparse";
 import Link from 'next/link';
 
+
+
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700"] });
 
 const categories = [
@@ -68,7 +70,10 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [cart, setCart] = useState([]);
   const [message, setMessage] = useState("");
-  
+  const [visibleProducts, setVisibleProducts] = useState(50);
+  const [showHealthyCart, setShowHealthyCart] = useState(false);
+
+
 
   const handlePrev = () => {
     setStartIndex((prev) => (prev > 0 ? prev - 4 : prev));
@@ -81,6 +86,8 @@ export default function Home() {
   const handleCategoryClick = (categoryName) => {
     setSelectedCategory(categoryName);
   };  
+
+  
 
   const addToCart = (product) => {
     setCart((prevCart) => {
@@ -133,7 +140,7 @@ export default function Home() {
             console.log("Datos parseados con PapaParse:", result.data); // Ver qué estructura tiene cada fila
             const productsData = result.data
               .map((row) =>
-                row.photos?.startsWith("http") && row.fecha_actual === "2024-10-22"
+                row.photos?.startsWith("http") && row.fecha_actual === "2024-11-26"
                   ? {
                       photo: row.photos,
                       name: row.display_name,  // Asegurar que el nombre esté aquí
@@ -170,11 +177,11 @@ export default function Home() {
               const validCategories = categoryMap[selectedCategory] || [];
               filteredProducts = productsData
                 .filter((product) => validCategories.includes(product.category))
-                .slice(0, 50);
+                .slice(0, visibleProducts);
             } 
             // Si no hay búsqueda ni categoría, mostrar productos aleatorios
             else {
-              filteredProducts = productsData.sort(() => 0.5 - Math.random()).slice(0, 50);
+              filteredProducts = productsData.sort(() => 0.5 - Math.random()).slice(0, visibleProducts);
             }
   
             console.log("Productos finales a mostrar:", filteredProducts);
@@ -183,7 +190,7 @@ export default function Home() {
         });
       })
       .catch((error) => console.error("Error al cargar el CSV:", error));
-  }, [selectedCategory, searchTerm, isDiaActive, isMercadonaActive]);
+  }, [selectedCategory, searchTerm, isDiaActive, isMercadonaActive, visibleProducts]);
   
 
   const openModal = (product) => {
@@ -196,10 +203,14 @@ export default function Home() {
     setSelectedProduct(null);
   };
 
+  const loadMoreProducts = () => {
+    setVisibleProducts((prev) => prev + 50);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-cover bg-no-repeat bg-fixed" style={{ backgroundImage: "url('/Fondos4.jpg')" }}>
+    <div className="min-h-screen flex flex-col bg-cover bg-no-repeat bg-fixed bg-[#363537]">
       {/* CABECERA */}
-      <header className="w-full h-20 bg-[#00563B] shadow-lg p-4 flex justify-between items-center px-9">
+      <header className="w-full h-20 bg-[#A869EB] shadow-lg p-4 flex justify-between items-center px-9">
         <div className="logo">
           <Image src="/Logo.png" 
           alt="Chirimoya Logo" 
@@ -209,17 +220,17 @@ export default function Home() {
         </div>
         <h1 className="text-white justify-center text-6xl font-sans">Chirimoya</h1>
         <div className="cursor-pointer" onClick={() => setCartOpen(true)}>
-          <ShoppingCart className="h-12 w-12 text-white hover:text-purple-600 transition-colors" />
+          <ShoppingCart className="h-12 w-12 text-white hover:text-black transition-colors" />
         </div>
       </header>
 
       {/* SIDEBAR DEL CARRITO */}
-      <div className={`fixed top-0 right-0 h-full w-80 bg-[#0B5351] shadow-lg p-4 transition-transform z-50 ${cartOpen ? "translate-x-0" : "translate-x-full"}`}>
+      <div className={`fixed top-0 right-0 h-90 w-96 bg-white text-black shadow-lg p-4 transition-transform z-50 ${cartOpen ? "translate-x-0" : "translate-x-full"}`}>
         <button onClick={() => setCartOpen(false)} className="absolute top-2 right-2">
           <X size={24} />
         </button>
         <h2 className="text-xl font-bold mb-4">Carrito</h2>
-        <ul className="text-white">
+        <ul className="text-black max-h-80  overflow-y-auto">
           {cart.map((item, index) => (
             <li key={index} className="border-b py-2 flex items-center">
               <Image src={item.photo} alt={item.name} width={40} height={40} className="rounded-md mr-2" />
@@ -247,7 +258,14 @@ export default function Home() {
             </li>
           ))}
         </ul>
+        <Link href="/cesta_saludable">
+          <button className="bg-green-500 text-white px-4 py-2 rounded mt-4 w-full">
+            Cesta Saludable
+          </button>
+        </Link>
       </div>
+
+      
 
       {/* MENÚ DE NAVEGACIÓN - CARRUSEL */}
       <nav className="w-full p-4 flex justify-center items-center relative">
@@ -313,7 +331,7 @@ export default function Home() {
             </svg>
           </div>
         </div>
-        <div className="flex justify-center mt-4 space-x-5">
+        <div className="flex justify-center mt-4 space-x-5 mb-6">
           <Image
             src="/DiaLogo.png"
             alt="Dia Logo"
@@ -356,6 +374,7 @@ export default function Home() {
             </div>
           ))}
         </div>
+        
       </main>
 
       {/* MODAL */}
@@ -392,8 +411,19 @@ export default function Home() {
         </div>
       )}
 
+      {products.length >= visibleProducts && (
+        <div className="flex justify-center mt-4 mb-6">
+          <button 
+            onClick={loadMoreProducts} 
+            className="px-6 py-3 bg-white text-black rounded hover:bg-[#A869EB] hover:text-white transition"
+          >
+            Ver más
+          </button>
+        </div>
+      )}
+
       {/* PIE DE PÁGINA */}
-      <footer className="w-full bg-[#111111] text-center p-4 text-white text-sm">
+      <footer className="w-full bg-[#111111] border-white text-center p-4 text-white text-sm">
         &copy; {new Date().getFullYear()} Chirimoya - Todos los derechos reservados.
       </footer>
     </div>
