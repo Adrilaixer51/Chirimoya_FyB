@@ -42,7 +42,7 @@ export default function ProductoDetalle() {
             // Convertir el histórico en formato usable
             const historicoOrdenado = productosCoincidentes
               .map(p => ({
-                fecha: p.fecha || "Fecha desconocida",
+                fecha: p.fecha_actual || "Fecha desconocida",
                 precio: p.price_instructions_7,
               }))
               .sort((a, b) => (a.fecha > b.fecha ? -1 : 1));
