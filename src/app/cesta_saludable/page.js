@@ -25,27 +25,27 @@ export default function CestaSaludable() {
         {/* Cesta Seleccionada */}
         <div className="w-1/2 bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl text-black font-semibold mb-4">Tu Cesta</h2>
-          <ul>
-            {cart.map((item, index) => (
-              <li key={index} className="flex items-center mb-3">
-                <Image src={item.photo} alt={item.name} width={50} height={50} className="rounded-md mr-3" />
-                <span>{item.name} - {item.price}€</span>
-              </li>
-            ))}
+          <ul className="bg-white p-4 text-black rounded shadow-md">
+            {cart.length === 0 ? (
+              <p>No hay productos en la cesta.</p>
+            ) : (
+              cart.map((item, index) => (
+                <li key={index} className="flex items-center border-b p-2">
+                  <Image src={item.photo} alt={item.name} width={50} height={50} className="rounded-md mr-4" />
+                  <div>
+                    <p className="font-semibold">{item.name}</p>
+                    <p>{item.price}€ (x{item.quantity})</p>
+                  </div>
+                </li>
+              ))
+            )}
           </ul>
         </div>
 
         {/* Cesta Saludable */}
         <div className="w-1/2 bg-green-100 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl text-black font-semibold mb-4">Cesta Saludable</h2>
-          <ul>
-            {healthyCart.map((item, index) => (
-              <li key={index} className="flex items-center mb-3">
-                <Image src={item.photo} alt={item.name} width={50} height={50} className="rounded-md mr-3" />
-                <span>{item.name} - {item.price}€</span>
-              </li>
-            ))}
-          </ul>
+          
         </div>
       </div>
 

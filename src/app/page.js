@@ -6,6 +6,7 @@ import { Inter } from "next/font/google";
 import { useEffect } from "react";
 import Papa from "papaparse";
 import Link from 'next/link';
+import { useRouter } from "next/navigation";
 
 
 
@@ -149,6 +150,7 @@ export default function Home() {
                       category: row.categories_1,
                       supermarket: row.super,
                       time: row.fecha_actual,
+                      id: row.id
                     }
                   : null
               )
@@ -194,8 +196,8 @@ export default function Home() {
   
 
   const openModal = (product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
+      setSelectedProduct(product);
+      setIsModalOpen(true);
   };
 
   const closeModal = () => {
@@ -259,7 +261,11 @@ export default function Home() {
           ))}
         </ul>
         <Link href="/cesta_saludable">
-          <button className="bg-green-500 text-white px-4 py-2 rounded mt-4 w-full">
+          <button className="bg-green-500 text-white px-4 py-2 rounded mt-4 w-full"
+           onClick={() => {
+              localStorage.setItem("cart", JSON.stringify(cart));
+            }}
+          >
             Cesta Saludable
           </button>
         </Link>
@@ -392,7 +398,8 @@ export default function Home() {
                 <p className="text-lg font-semibold text-green-600">{selectedProduct.price} €</p>
                 <p className="text-gray-700">Supermercado: {selectedProduct.supermarket}</p>
                 <p className="text-gray-700">Fecha: {selectedProduct.time}</p>
-                <Link href={`/productos/${encodeURIComponent(selectedProduct.name)}`} className="text-blue-500 underline">
+                <p className="text-gray-700">ID: {selectedProduct.id}</p>
+                <Link href={`/productos/${encodeURIComponent(selectedProduct.id)}`} className="text-blue-500 underline">
                   Más información
                 </Link>
                 <button className="mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
