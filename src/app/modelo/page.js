@@ -28,7 +28,7 @@ function RotatingModel({ modelPath }) {
 export default function Scene() {
   return (
     <div className="h-screen flex flex-col justify-center items-center bg-gray-150 relative overflow-hidden">
-      <Canvas camera={{ position: [0, 1, 5], fov: 75 }}>
+      <Canvas camera={{ position: [0, 1, 3], fov: 75 }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[2, 2, 2]} intensity={1} />
         <RotatingModel modelPath="/cubic_shopping_cart.glb" />
