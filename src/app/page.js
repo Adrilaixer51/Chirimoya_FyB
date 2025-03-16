@@ -210,9 +210,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-cover bg-no-repeat bg-fixed bg-[#363537]">
+    <div className="min-h-screen flex flex-col bg-cover bg-no-repeat bg-fixed bg-[#363537] pt-24 flex flex-col items-center justify-center flex-1 p-8">
       {/* CABECERA */}
-      <header className="w-full h-20 bg-[#A869EB] shadow-lg p-4 flex justify-between items-center px-9">
+      <header className="w-full h-20 bg-[#363537] shadow-lg p-4 flex justify-between items-center px-9 fixed top-0 z-50  ">
         <div className="logo">
           <Image src="/Logo.png" 
           alt="Chirimoya Logo" 
@@ -222,7 +222,7 @@ export default function Home() {
         </div>
         <h1 className="text-white justify-center text-6xl font-sans">Chirimoya</h1>
         <div className="cursor-pointer" onClick={() => setCartOpen(true)}>
-          <ShoppingCart className="h-12 w-12 text-white hover:text-black transition-colors" />
+          <ShoppingCart className="h-12 w-12 text-white hover:text-[#A869EB] transition-colors" />
         </div>
       </header>
 
